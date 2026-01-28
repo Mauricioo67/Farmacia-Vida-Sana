@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Clientes - Sistema Farmacia{% endblock %}
+
+{% block extra_css %}
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="h3 fw-bold text-primary">Gestión de Clientes</h1>
+            <p class="text-muted">Directorio de clientes registrados</p>
+        </div>
+        <div class="col-lg-4 text-end">
+            <a href="{{ url_for('clients.create') }}" class="btn btn-primary">
+                <i class="bi bi-person-plus me-2"></i>Nuevo Cliente
+            </a>
+        </div>
+    </div>
+
+    <div class="card dashboard-card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="clientesTable" class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre Completo</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in clientes %}
+                        <tr>
+                            <td>#{{ c.idcliente }}</td>
+                            <td class="fw-bold">{{ c.nombre }} {{ c.apellidos }}</td>
+                            <td>
+                                {% if c.telefono %}
+                                <a href="tel:{{ c.telefono }}" class="text-decoration-none text-dark">
+                                    <i class="bi bi-telephone me-1"></i> {{ c.telefono }}
+                                </a>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ c.email if c.email else '-' }}</td>
+                            <td>
+                                <a href="{{ url_for('clients.edit', id=c.idcliente) }}" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{{ url_for('clients.delete', id=c.idcliente) }}" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('¿Eliminar cliente?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#clientesTable').DataTable({
+            "language": { "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" }
+        });
+    });
+</script>
+{% endblock %}

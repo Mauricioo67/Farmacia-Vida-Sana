@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Editar' if articulo else 'Nuevo' }} Producto - Sistema Farmacia{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card dashboard-card">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="mb-0">
+                    <i class="bi bi-box-seam me-2"></i>
+                    {{ 'Editar' if articulo else 'Nuevo' }} Producto
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST"
+                    action="{{ url_for('products.edit', id=articulo.idarticulo) if articulo else url_for('products.create') }}">
+
+                    <div class="row g-3">
+                        <!-- Código y Nombre -->
+                        <div class="col-md-4">
+                            <label class="form-label">Código</label>
+                            <input type="text" class="form-control" name="codigo"
+                                value="{{ articulo.codigo if articulo else '' }}" required>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Nombre del Producto</label>
+                            <input type="text" class="form-control" name="nombre"
+                                value="{{ articulo.nombre if articulo else '' }}" required>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="col-12">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-control" name="descripcion"
+                                rows="2">{{ articulo.descripcion if articulo else '' }}</textarea>
+                        </div>
+
+                        <!-- Categoría y Presentación -->
+                        <div class="col-md-6">
+                            <label class="form-label">Categoría</label>
+                            <select class="form-select" name="idcategoria" required>
+                                <option value="">Seleccione...</option>
+                                {% for cat in categorias %}
+                                <option value="{{ cat.idcategoria }}" {{ 'selected' if articulo and
+                                    articulo.idcategoria==cat.idcategoria else '' }}>
+                                    {{ cat.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Presentación</label>
+                            <select class="form-select" name="idpresentacion" required>
+                                <option value="">Seleccione...</option>
+                                {% for pres in presentaciones %}
+                                <option value="{{ pres.idpresentacion }}" {{ 'selected' if articulo and
+                                    articulo.idpresentacion==pres.idpresentacion else '' }}>
+                                    {{ pres.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Stock y Precio -->
+                        <div class="col-md-4">
+                            <label class="form-label">Stock Inicial</label>
+                            <input type="number" class="form-control" name="stock"
+                                value="{{ articulo.stock if articulo else '0' }}" min="0" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Precio Venta</label>
+                            <div class="input-group">
+                                <span class="input-group-text">Bs.</span>
+                                <input type="number" class="form-control" name="precio_venta" step="0.01"
+                                    value="{{ articulo.precio_venta if articulo else '0.00' }}" min="0" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" name="estado">
+                                <option value="activo" {{ 'selected' if articulo and articulo.estado=='activo' else ''
+                                    }}>Activo</option>
+                                <option value="inactivo" {{ 'selected' if articulo and articulo.estado=='inactivo'
+                                    else '' }}>Inactivo</option>
+                            </select>
+                        </div>
+
+                        <!-- Tipo Venta -->
+                        <div class="col-md-4">
+                            <label class="form-label">Tipo Venta</label>
+                            <select class="form-select" name="tipo_venta">
+                                <option value="COMPLETO" {{ 'selected' if articulo and articulo.tipo_venta=='COMPLETO'
+                                    else '' }}>Completo (Caja/Unidad)</option>
+                                <option value="TIRAS" {{ 'selected' if articulo and articulo.tipo_venta=='TIRAS' else ''
+                                    }}>Por Tiras (Blisters)</option>
+                                <option value="UNIDADES" {{ 'selected' if articulo and articulo.tipo_venta=='UNIDADES'
+                                    else '' }}>Por Unidades Sueltas</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 mt-4 text-end">
+                            <a href="{{ url_for('products.index') }}" class="btn btn-secondary me-2">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-2"></i>Guardar Producto
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

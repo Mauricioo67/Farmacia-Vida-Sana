@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Recibo de Venta #{{ venta.idventa }} - Sistema Farmacia{% endblock %}
+
+{% block extra_css %}
+<!-- PDF Generation used instead of CSS Print Styles -->
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0 invoice-container">
+            <div class="card-body p-5">
+                <!-- Encabezado del Recibo -->
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold text-primary mb-1"><i class="bi bi-capsule-pill me-2"></i>Farmacia</h2>
+                    <p class="text-muted mb-0">De: Farmacia Central</p>
+                    <p class="text-muted">NIT: 123456789</p>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Detalles de la Transacción -->
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <small class="text-muted d-block uppercase ls-1">NRO VENTA</small>
+                        <span class="fw-bold fs-5">#{{ '%06d' % venta.idventa }}</span>
+                    </div>
+                    <div class="col-6 text-end">
+                        <small class="text-muted d-block uppercase ls-1">FECHA</small>
+                        <span class="fw-bold">{{ venta.fecha_hora[:10] }}</span>
+                        <div class="small text-muted">{{ venta.fecha_hora[11:16] }}</div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <small class="text-muted d-block uppercase ls-1">CLIENTE</small>
+                    <span class="fw-bold border-bottom border-dark pb-1 d-block">
+                        {{ venta.cliente.nombre }} {{ venta.cliente.apellidos }}
+                    </span>
+                    <small class="text-muted d-block mt-1">Atendido por: {{ venta.trabajador.usuario }}</small>
+                </div>
+
+                <!-- Tabla de Productos -->
+                <div class="table-responsive mb-4">
+                    <table class="table table-borderless table-sm">
+                        <thead class="border-bottom text-muted small">
+                            <tr>
+                                <th>CANT.</th>
+                                <th>DESCRIPCIÓN</th>
+                                <th class="text-end">IMPORTE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in detalles %}
+                            <tr>
+                                <td class="fw-bold">{{ d.cantidad }}</td>
+                                <td>
+                                    {{ d.articulo.nombre }}
+                                    <div class="small text-muted" style="font-size: 0.8em;">{{ d.articulo.codigo }}
+                                    </div>
+                                </td>
+                                <td class="text-end">Bs. {{ d.subtotal }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="border-top border-2 border-dark">
+                            <tr>
+                                <td colspan="2" class="text-end pt-3 text-uppercase small ls-1">Total a Pagar</td>
+                                <td class="text-end pt-3 fs-4 fw-bold text-primary">Bs. {{ venta.total_venta }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Pie de Página -->
+                <div class="text-center mt-5">
+                    <p class="mb-0 fw-bold">¡Gracias por su compra!</p>
+                    <small class="text-muted">Conserve este comprobante</small>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{{ url_for('sales.invoice_pdf', id=venta.idventa) }}" class="btn btn-danger"
+                            target="_blank">
+                            <i class="bi bi-file-earmark-pdf me-2"></i>Descargar PDF
+                        </a>
+                        <a href="{{ url_for('sales.index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Volver al Historial
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

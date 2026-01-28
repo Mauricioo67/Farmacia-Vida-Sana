@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Reporte de Inventario - Sistema Farmacia{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stats-icon {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+
+    .stock-badge {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .stock-high {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .stock-medium {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .stock-low {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-white mb-2">
+                        <i class="bi bi-box-seam me-2"></i>Reporte de Inventario
+                    </h2>
+                    <p class="text-white-50 mb-0">Estado actual del stock de productos</p>
+                </div>
+                <a href="{{ url_for('reports.index') }}" class="btn btn-light">
+                    <i class="bi bi-arrow-left me-2"></i>Volver
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <i class="bi bi-box stats-icon text-primary"></i>
+                <h3 class="mb-1">{{ total_productos }}</h3>
+                <p class="text-muted mb-0">Total Productos</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <i class="bi bi-exclamation-triangle stats-icon text-warning"></i>
+                <h3 class="mb-1">{{ productos_bajo_stock }}</h3>
+                <p class="text-muted mb-0">Stock Bajo (&lt;10)</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <i class="bi bi-x-circle stats-icon text-danger"></i>
+                <h3 class="mb-1">{{ productos_sin_stock }}</h3>
+                <p class="text-muted mb-0">Sin Stock</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Table -->
+    <div class="card dashboard-card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-table me-2"></i>Listado de Productos
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if productos %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Stock</th>
+                            <th>Precio</th>
+                            <th>Estado</th>
+                            <th>Nivel</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in productos %}
+                        <tr>
+                            <td><strong>{{ producto.codigo }}</strong></td>
+                            <td>{{ producto.nombre }}</td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    {{ producto.categoria.nombre if producto.categoria else 'Sin categoría' }}
+                                </span>
+                            </td>
+                            <td class="fw-bold">{{ producto.stock }}</td>
+                            <td>Bs. {{ "%.2f"|format(producto.precio_venta) }}</td>
+                            <td>
+                                {% if producto.estado == 'activo' %}
+                                <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if producto.stock == 0 %}
+                                <span class="stock-badge stock-low">
+                                    <i class="bi bi-x-circle me-1"></i>Sin Stock
+                                </span>
+                                {% elif producto.stock < 10 %} <span class="stock-badge stock-medium">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>Bajo
+                                    </span>
+                                    {% else %}
+                                    <span class="stock-badge stock-high">
+                                        <i class="bi bi-check-circle me-1"></i>Normal
+                                    </span>
+                                    {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+                <p class="text-muted mt-3">No hay productos registrados en el sistema</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Alert for Low Stock -->
+    {% if productos_bajo_stock > 0 or productos_sin_stock > 0 %}
+    <div class="alert alert-warning bg-white border-warning shadow-sm mt-4">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <strong>Atención:</strong>
+        Hay {{ productos_bajo_stock + productos_sin_stock }} producto(s) que requieren reabastecimiento.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

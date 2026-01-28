@@ -1,0 +1,13 @@
+# Exlcuir carpeta de entorno virtual y cache
+**/__pycache__/
+**/.venv/
+**/venv/
+
+# EXCLUIR ARCHIVOS SENSIBLES (ESTO EVITÓ EL PUSH)
+**/ .env
+farmacia_python/.env
+
+# Otros
+*.pyc
+.vscode/
+GUIA_DESPLIEGUE.txt

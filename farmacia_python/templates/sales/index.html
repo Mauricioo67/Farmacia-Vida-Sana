@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Historial de Ventas - Sistema Farmacia{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="h3 fw-bold text-primary">Historial de Ventas</h1>
+            <p class="text-muted">Registro de transacciones</p>
+        </div>
+        <div class="col-lg-4 text-end">
+            <a href="{{ url_for('sales.create') }}" class="btn btn-success btn-lg shadow-sm">
+                <i class="bi bi-cart-plus me-2"></i>Nueva Venta
+            </a>
+        </div>
+    </div>
+
+    <div class="card dashboard-card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="ventasTable" class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th># ID</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Vendedor</th>
+                            <th>Total</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in ventas %}
+                        <tr>
+                            <td><strong>{{ v.idventa }}</strong></td>
+                            <td>{{ v.fecha_hora[:10] }} <small class="text-muted">{{ v.fecha_hora[11:16] }}</small></td>
+                            <td>{{ v.cliente.nombre }} {{ v.cliente.apellidos }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ v.trabajador.usuario }}</span></td>
+                            <td class="fw-bold text-success">Bs. {{ v.total_venta }}</td>
+                            <td>
+                                <a href="{{ url_for('sales.invoice', id=v.idventa) }}"
+                                    class="btn btn-sm btn-outline-primary" title="Ver Recibo">
+                                    <i class="bi bi-receipt"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#ventasTable').DataTable({
+            "order": [[0, "desc"]],
+            "language": { "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" }
+        });
+    });
+</script>
+{% endblock %}

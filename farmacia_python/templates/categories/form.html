@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Editar' if categoria else 'Nueva' }} Categoría - Sistema Farmacia{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">{{ 'Editar' if categoria else 'Registrar' }} Categoría</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" name="nombre" class="form-control" required
+                            value="{{ categoria.nombre if categoria else '' }}" placeholder="Ej: Antibióticos">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea name="descripcion" class="form-control"
+                            rows="3">{{ categoria.descripcion if categoria else '' }}</textarea>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-save me-2"></i>Guardar
+                        </button>
+                        <a href="{{ url_for('categories.index') }}" class="btn btn-light border">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Recuperar Contraseña - Sistema Farmacia</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+        }
+
+        .login-card {
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .progress-bar {
+            transition: width 0.3s, background-color 0.3s;
+        }
+    </style>
+</head>
+
+<body class="d-flex align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
+                <div class="card login-card">
+                    <!-- Header -->
+                    <div class="card-header bg-primary text-white text-center py-4">
+                        <h4 class="mb-0"><i class="bi bi-capsule-pill me-2"></i>Sistema Farmacia</h4>
+                        <p class="mb-0 opacity-75">Recuperación de Contraseña</p>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="card-body p-4 p-md-5">
+
+                        <!-- Mensajes Flash -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                        {% endwith %}
+
+                        {% if step == 1 %}
+                        <!-- Paso 1: Buscar Usuario -->
+                        <div class="text-center mb-4">
+                            <h5 class="mb-2">Recuperar Contraseña</h5>
+                            <p class="text-muted mb-4">Ingrese su nombre de usuario para continuar</p>
+                        </div>
+
+                        <form method="POST" action="{{ url_for('auth.recover') }}">
+                            <div class="mb-4">
+                                <label class="form-label"><i class="bi bi-person me-1"></i> Nombre de Usuario</label>
+                                <input type="text" class="form-control" name="usuario" placeholder="Ingrese su usuario"
+                                    required>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-arrow-right-circle me-2"></i> Continuar
+                                </button>
+                                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-box-arrow-in-left me-2"></i> Volver al Login
+                                </a>
+                            </div>
+                        </form>
+
+                        {% elif step == 2 %}
+                        <!-- Paso 2: Cambiar Contraseña -->
+                        <div class="alert alert-info">
+                            <i class="bi bi-person-badge me-2"></i>
+                            <strong>Usuario:</strong> {{ usuario_info }}
+                        </div>
+
+                        <form method="POST" action="{{ url_for('auth.recover_password') }}">
+                            <input type="hidden" name="usuario_id" value="{{ usuario_id }}">
+
+                            <div class="mb-3">
+                                <label class="form-label"><i class="bi bi-lock me-1"></i> Nueva Contraseña</label>
+                                <input type="password" class="form-control" name="nueva_password" id="nueva_password"
+                                    placeholder="Mínimo 6 caracteres" required>
+                                <div class="progress mt-2" style="height: 5px;">
+                                    <div class="progress-bar" id="passwordStrength" role="progressbar"></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label"><i class="bi bi-lock-fill me-1"></i> Confirmar
+                                    Contraseña</label>
+                                <input type="password" class="form-control" name="confirmar_password"
+                                    id="confirmar_password" placeholder="Repita la contraseña" required>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle me-2"></i> Cambiar Contraseña
+                                </button>
+                                <a href="{{ url_for('auth.recover') }}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left me-2"></i> Cancelar
+                                </a>
+                            </div>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simple password strength
+        const input = document.getElementById('nueva_password');
+        const bar = document.getElementById('passwordStrength');
+        if (input && bar) {
+            input.addEventListener('input', function () {
+                const val = this.value;
+                let strength = 0;
+                if (val.length > 5) strength += 40;
+                if (val.length > 8) strength += 30;
+                if (/[A-Z0-9]/.test(val)) strength += 30;
+                bar.style.width = strength + '%';
+                bar.className = 'progress-bar bg-' + (strength < 50 ? 'danger' : (strength < 80 ? 'warning' : 'success'));
+            });
+        }
+    </script>
+</body>
+
+</html>

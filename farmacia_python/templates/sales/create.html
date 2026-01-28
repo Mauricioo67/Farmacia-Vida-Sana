@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva Venta - Sistema Farmacia{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Panel Izquierdo: Selección de Productos -->
+        <div class="col-lg-7">
+            <div class="card dashboard-card bg-light border-0 mb-3">
+                <div class="card-body">
+                    <h5 class="card-title text-primary mb-3"><i class="bi bi-search me-2"></i>Buscar Productos</h5>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" id="productoSearch" class="form-control border-start-0"
+                            placeholder="Escriba nombre o código...">
+                    </div>
+
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover bg-white rounded shadow-sm">
+                            <thead class="sticky-top bg-white">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Stock</th>
+                                    <th>Precio</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaProductos">
+                                {% for p in productos %}
+                                <tr class="producto-item" data-nombre="{{ p.nombre|lower }} {{ p.codigo }}"
+                                    data-json="{{ p|tojson }}">
+                                    <td>
+                                        <div class="fw-bold">{{ p.nombre }}</div>
+                                        <small class="text-muted">{{ p.codigo }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ 'bg-success' if p.stock > 10 else 'bg-danger' }}">
+                                            {{ p.stock }}
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold text-primary">Bs. {{ p.precio_venta }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary btn-add"
+                                            data-id="{{ p.idarticulo }}">
+                                            <i class="bi bi-plus-lg"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Derecho: Carrito / Detalle de Venta -->
+        <div class="col-lg-5">
+            <div class="card dashboard-card h-100">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-cart me-2"></i>Detalle de Venta</h5>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <!-- Selección de Cliente -->
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Cliente</label>
+                        <select id="selectCliente" class="form-select">
+                            <option value="1">Consumidor Final</option>
+                            {% for c in clientes %}
+                            <option value="{{ c.idcliente }}">{{ c.nombre }} {{ c.apellidos }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Método de Pago -->
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Método de Pago</label>
+                        <select id="metodoPago" class="form-select border-primary shadow-sm">
+                            <option value="efectivo" selected>💵 Efectivo</option>
+                            <option value="qr">📱 QR / Transferencia Bancaria</option>
+                        </select>
+                    </div>
+
+                    <!-- Panel de Efectivo -->
+                    <div id="panelEfectivo" class="payment-panel p-3 bg-light rounded border mb-3">
+                        <div class="mb-2">
+                            <label class="form-label small text-muted">Efectivo Recibido</label>
+                            <div class="input-group">
+                                <span class="input-group-text">Bs.</span>
+                                <input type="number" id="montoRecibido"
+                                    class="form-control form-control-lg fw-bold text-success" placeholder="0.00"
+                                    step="0.01">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">Su cambio:</span>
+                            <h4 class="mb-0 fw-bold text-danger">Bs. <span id="cambioVenta">0.00</span></h4>
+                        </div>
+                    </div>
+
+                    <!-- Panel de QR -->
+                    <div id="panelQR"
+                        class="payment-panel p-3 bg-primary bg-opacity-10 rounded border border-primary mb-3 text-center"
+                        style="display: none;">
+                        <i class="bi bi-info-circle-fill text-primary mb-2 d-block"></i>
+                        <small class="text-primary fw-bold">Verifique el abono en su banca móvil antes de completar la
+                            venta.</small>
+                    </div>
+
+                    <!-- Tabla del Carrito -->
+                    <div class="flex-grow-1 overflow-auto mb-3 border rounded p-2 bg-light">
+                        <table class="table table-sm table-borderless">
+                            <thead>
+                                <tr class="text-muted border-bottom">
+                                    <th>Cant.</th>
+                                    <th>Producto</th>
+                                    <th class="text-end">Subtotal</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="carritoBody">
+                                <!-- Items agregados irán aquí -->
+                            </tbody>
+                        </table>
+                        <div id="emptyCartMsg" class="text-center text-muted py-5">
+                            <i class="bi bi-cart col-12 fs-1 opacity-25"></i>
+                            <p>El carrito está vacío</p>
+                        </div>
+                    </div>
+
+                    <!-- Totales y Botón -->
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                            <h4 class="mb-0 text-muted">Total</h4>
+                            <h2 class="mb-0 fw-bold text-primary">Bs. <span id="totalVenta">0.00</span></h2>
+                        </div>
+                        <button id="btnProcesar" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" disabled>
+                            <i class="bi bi-cash-stack me-2"></i> COBRAR Y FINALIZAR
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal QR -->
+<div class="modal fade" id="modalQR" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title"><i class="bi bi-qr-code-scan me-2"></i>Pago por QR</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-4">
+                <p class="small text-muted mb-3">Escanee y realice la transferencia de:</p>
+                <h3 class="fw-bold text-primary mb-3">Bs. <span id="qrTotalText">0.00</span></h3>
+                <div class="bg-light p-3 rounded mb-3">
+                    <img src="{{ url_for('static', filename='img/' + qr_filename) }}"
+                        class="img-fluid rounded shadow-sm" alt="QR de Pago" id="qrImage">
+                </div>
+                <div class="alert alert-warning py-2 small mb-0">
+                    <i class="bi bi-exclamation-triangle me-1"></i> Confirmar transferencia manual
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" id="btnConfirmarQR" class="btn btn-primary w-100">CONFIRMAR PAGO RECIBIDO</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    let carrito = [];
+
+    // Búsqueda en tiempo real
+    document.getElementById('productoSearch').addEventListener('keyup', function () {
+        let val = this.value.toLowerCase();
+        let items = document.querySelectorAll('.producto-item');
+        items.forEach(item => {
+            let text = item.getAttribute('data-nombre');
+            item.style.display = text.includes(val) ? '' : 'none';
+        });
+    });
+
+    // Agregar al carrito
+    document.querySelectorAll('.btn-add').forEach(btn => {
+        btn.addEventListener('click', function () {
+            let row = this.closest('tr');
+            let data = JSON.parse(row.getAttribute('data-json'));
+            addToCart(data);
+        });
+    });
+
+    function addToCart(product) {
+        let existing = carrito.find(i => i.idarticulo == product.idarticulo);
+
+        if (existing) {
+            if (existing.cantidad + 1 > product.stock) {
+                Swal.fire('Stock insuficiente', 'No puedes agregar más unidades de las disponibles', 'warning');
+                return;
+            }
+            existing.cantidad++;
+            existing.subtotal = (existing.cantidad * existing.precio).toFixed(2);
+        } else {
+            carrito.push({
+                idarticulo: product.idarticulo,
+                nombre: product.nombre,
+                precio: parseFloat(product.precio_venta),
+                cantidad: 1,
+                stock: product.stock,
+                subtotal: parseFloat(product.precio_venta).toFixed(2)
+            });
+        }
+        renderCart();
+    }
+
+    function renderCart() {
+        const tbody = document.getElementById('carritoBody');
+        const emptyMsg = document.getElementById('emptyCartMsg');
+        const totalSpan = document.getElementById('totalVenta');
+        const btnProcesar = document.getElementById('btnProcesar');
+
+        tbody.innerHTML = '';
+        let total = 0;
+
+        if (carrito.length === 0) {
+            emptyMsg.style.display = 'block';
+            btnProcesar.disabled = true;
+        } else {
+            emptyMsg.style.display = 'none';
+            btnProcesar.disabled = false;
+        }
+
+        carrito.forEach((item, index) => {
+            total += parseFloat(item.subtotal);
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="width: 80px;">
+                    <input type="number" class="form-control form-control-sm qty-input" 
+                           min="1" max="${item.stock}" value="${item.cantidad}" 
+                           onchange="updateQty(${index}, this.value)">
+                </td>
+                <td class="text-truncate" style="max-width: 150px;">${item.nombre}</td>
+                <td class="text-end fw-bold">Bs. ${item.subtotal}</td>
+                <td class="text-end">
+                    <button class="btn btn-link text-danger p-0" onclick="removeItem(${index})">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        totalSpan.textContent = total.toFixed(2);
+    }
+
+    window.updateQty = function (index, qty) {
+        qty = parseInt(qty);
+        let item = carrito[index];
+        if (qty < 1) qty = 1;
+        if (qty > item.stock) {
+            Swal.fire('Stock', 'Máximo disponible: ' + item.stock, 'warning');
+            qty = item.stock;
+        }
+        item.cantidad = qty;
+        item.subtotal = (item.cantidad * item.precio).toFixed(2);
+        renderCart();
+    }
+
+    window.removeItem = function (index) {
+        carrito.splice(index, 1);
+        renderCart();
+    }
+
+    // Cambio de método de pago
+    document.getElementById('metodoPago').addEventListener('change', function () {
+        if (this.value === 'qr') {
+            document.getElementById('panelQR').style.display = 'block';
+            document.getElementById('panelEfectivo').style.display = 'none';
+        } else {
+            document.getElementById('panelQR').style.display = 'none';
+            document.getElementById('panelEfectivo').style.display = 'block';
+        }
+        validarVenta();
+    });
+
+    // Cálculo de cambio y validación
+    document.getElementById('montoRecibido').addEventListener('input', function () {
+        let recibido = parseFloat(this.value) || 0;
+        let total = parseFloat(document.getElementById('totalVenta').textContent) || 0;
+        let cambio = recibido - total;
+
+        document.getElementById('cambioVenta').textContent = Math.max(0, cambio).toFixed(2);
+        validarVenta();
+    });
+
+    function validarVenta() {
+        const metodo = document.getElementById('metodoPago').value;
+        const total = parseFloat(document.getElementById('totalVenta').textContent) || 0;
+        const btnProcesar = document.getElementById('btnProcesar');
+
+        if (carrito.length === 0) {
+            btnProcesar.disabled = true;
+            return;
+        }
+
+        if (metodo === 'efectivo') {
+            const recibido = parseFloat(document.getElementById('montoRecibido').value) || 0;
+            btnProcesar.disabled = (recibido < total);
+        } else {
+            btnProcesar.disabled = false;
+        }
+    }
+
+    // Modal de QR
+    const modalQR = new bootstrap.Modal(document.getElementById('modalQR'));
+
+    document.getElementById('btnProcesar').addEventListener('click', function () {
+        if (carrito.length === 0) return;
+
+        const metodo = document.getElementById('metodoPago').value;
+        const total = document.getElementById('totalVenta').textContent;
+
+        if (metodo === 'qr') {
+            document.getElementById('qrTotalText').textContent = total;
+            modalQR.show();
+        } else {
+            procesarVenta();
+        }
+    });
+
+    document.getElementById('btnConfirmarQR').addEventListener('click', function () {
+        modalQR.hide();
+        procesarVenta();
+    });
+
+    function procesarVenta() {
+        let clienteId = document.getElementById('selectCliente').value;
+        const total = document.getElementById('totalVenta').textContent;
+        const metodo = document.getElementById('metodoPago').value;
+        const recibido = document.getElementById('montoRecibido').value;
+        const cambio = document.getElementById('cambioVenta').textContent;
+
+        let confirmText = `Total a cobrar: Bs. ${total}`;
+        if (metodo === 'efectivo') {
+            confirmText += `\nRecibido: Bs. ${recibido}\nCambio: Bs. ${cambio}`;
+        }
+
+        Swal.fire({
+            title: '¿Confirmar ' + (metodo === 'qr' ? 'Pago QR' : 'Venta') + '?',
+            text: confirmText,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, finalizar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch("{{ url_for('sales.store') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        idcliente: clienteId,
+                        items: carrito,
+                        metodo_pago: metodo,
+                        monto_recibido: recibido,
+                        cambio: cambio
+                    })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('¡Venta Exitosa!', 'La transacción se registró correctamente', 'success')
+                                .then(() => {
+                                    window.location.href = data.redirect;
+                                });
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(err => Swal.fire('Error', 'Error de conexión', 'error'));
+            }
+        });
+    }
+
+    // Sobrescribir renderCart para llamar a validarVenta
+    const originalRenderCart = renderCart;
+    window.renderCart = function () {
+        originalRenderCart();
+        validarVenta();
+    };
+</script>
+{% endblock %}
