@@ -22,22 +22,56 @@ except Exception:
     RetrievalQA = None
     LANGCHAIN_AVAILABLE = False
 
+class CohereEmbeddings:
+    """Wrapper simple para Cohere compatible con la interfaz de LangChain"""
+    def __init__(self, api_key):
+        import cohere
+        self.client = cohere.Client(api_key)
+        
+    def embed_query(self, text):
+        """Generar embedding para una sola cadena de texto"""
+        response = self.client.embed(
+            texts=[text],
+            model='embed-multilingual-v3.0',
+            input_type='search_query'
+        )
+        return response.embeddings[0]
+        
+    def embed_documents(self, texts):
+        """Generar embeddings para una lista de textos"""
+        response = self.client.embed(
+            texts=texts,
+            model='embed-multilingual-v3.0',
+            input_type='search_document'
+        )
+        return response.embeddings
+
 class RAGManager:
     def __init__(self):
-        if not LANGCHAIN_AVAILABLE:
-            raise RuntimeError("LangChain no está instalado. Instala 'langchain' y 'langchain-openai' para habilitar RAG.")
+        # Nota: Ya no dependemos estrictamente de LangChain para la inferencia básica
+        # pero mantenemos la estructura por si se reactiva el uso de cadenas complejas.
+        
+        self.cohere_key = os.getenv('COHERE_API_KEY')
+        if not self.cohere_key:
+            # Fallback para desarrollo o si no está configurado
+            print("⚠️ COHERE_API_KEY no encontrada, RAG no funcionará correctamente")
+            
+        try:
+            self.embeddings = CohereEmbeddings(self.cohere_key)
+        except Exception as e:
+            print(f"Error inicializando Cohere: {e}")
+            self.embeddings = None
 
-        self.api_key = Config.OPENAI_API_KEY
-        if not self.api_key:
-            raise ValueError("OPENAI_API_KEY no configurada")
-
-        self.embeddings = OpenAIEmbeddings(openai_api_key=self.api_key, model="text-embedding-3-small")
         self.db = get_db()
         self.knowledge_base_path = "docs/knowledge_base"
     
     def index_documents(self):
         """Indexar documentos de la base de conocimiento"""
         try:
+            if not LANGCHAIN_AVAILABLE:
+                print("⚠️ LangChain no disponible para carga de documentos")
+                return False
+
             # Cargar documentos
             loader = DirectoryLoader(
                 self.knowledge_base_path,
@@ -56,6 +90,9 @@ class RAGManager:
             # Generar embeddings
             for i, doc in enumerate(split_docs):
                 try:
+                    if not self.embeddings:
+                        raise ValueError("Embeddings no inicializados")
+                        
                     embedding_vector = self.embeddings.embed_query(doc.page_content)
                     
                     # Guardar en Supabase
@@ -85,6 +122,10 @@ class RAGManager:
     def search_relevant_docs(self, query, top_k=3):
         """Búsqueda vectorial de documentos relevantes"""
         try:
+            if not self.embeddings:
+                 print("⚠️ Embeddings no inicializados")
+                 return []
+
             # Generar embedding de la consulta
             query_embedding = self.embeddings.embed_query(query)
             
@@ -93,7 +134,7 @@ class RAGManager:
                 'search_documents',
                 {
                     'query_embedding': query_embedding,
-                    'similarity_threshold': 0.6,
+                    'similarity_threshold': 0.4,  # Lower threshold to improve recall
                     'match_count': top_k
                 }
             ).execute()

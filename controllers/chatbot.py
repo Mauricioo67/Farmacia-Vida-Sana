@@ -165,6 +165,17 @@ def get_database_context(query, db):
                     context += "\n💰 Sin ventas hoy aún\n"
             except Exception as e:
                 print(f"Error en contexto ventas: {e}")
+
+        # ===== CONTEXTO DE CATEGORIAS =====
+        if any(word in query_lower for word in ['categoria', 'categoría', 'tipo', 'clases', 'grupos']):
+            try:
+                cats = db.table('categoria').select('nombre, descripcion').limit(10).execute().data
+                if cats:
+                    context += "\n🗂️ CATEGORÍAS DISPONIBLES:\n"
+                    for c in cats:
+                        context += f"  - {c['nombre']}: {c.get('descripcion', '')}\n"
+            except Exception as e:
+                print(f"Error en contexto categorias: {e}")
         
         # ===== ALERTAS CRÍTICAS =====
         try:
@@ -269,5 +280,43 @@ BD: {db_context}"""
         
     except Exception as e:
         print(f"API Chat error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@chatbot_bp.route('/n8n-chat', methods=['POST'])
+def n8n_chat():
+    """Proxy para enviar mensajes al workflow de n8n"""
+    try:
+        data = request.get_json()
+        message = data.get('message')
+        
+        # URL del Webhook de n8n (configurada en .env)
+        n8n_url = os.getenv('N8N_WEBHOOK_URL')
+        
+        print(f"🔹 Enviando a n8n ({n8n_url}): {message}")
+        
+        if not n8n_url:
+            print("❌ Error: N8N_WEBHOOK_URL falta")
+            return jsonify({'error': 'N8N_WEBHOOK_URL no configurada'}), 500
+            
+        import requests
+        # Enviar al webhook de n8n
+        response = requests.post(n8n_url, json={'chatInput': message})
+        
+        print(f"🔹 Status n8n: {response.status_code}")
+        print(f"🔹 Respuesta n8n raw: {response.text}")
+        
+        if response.status_code == 200:
+            try:
+                return jsonify(response.json())
+            except Exception as json_err:
+                print(f"❌ Error parseando JSON de n8n: {json_err}")
+                # Fallback si n8n devuelve texto plano
+                return jsonify({'response': response.text})
+        else:
+            return jsonify({'error': 'Error en n8n', 'details': response.text}), response.status_code
+            
+    except Exception as e:
+        print(f"Error Proxy n8n: {e}")
         return jsonify({'error': str(e)}), 500
 

@@ -166,7 +166,7 @@ class ChatbotWidget {
 
             this.removeTypingIndicator();
 
-            if (data.success) {
+            if (data.response) {
                 this.addBotMessage(data.response);
                 this.conversationHistory.push({
                     role: 'assistant',

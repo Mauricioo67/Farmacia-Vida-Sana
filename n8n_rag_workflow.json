@@ -1,0 +1,145 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "chat",
+                "options": {}
+            },
+            "id": "webhook-node",
+            "name": "Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                460,
+                300
+            ],
+            "webhookId": "rag-chat"
+        },
+        {
+            "parameters": {
+                "model": "embed-multilingual-v3.0",
+                "text": "={{ $json.body.message }}"
+            },
+            "id": "cohere-embed",
+            "name": "Cohere Embeddings",
+            "type": "n8n-nodes-base.cohere",
+            "typeVersion": 1,
+            "position": [
+                680,
+                300
+            ],
+            "credentials": {
+                "cohereApi": {
+                    "id": "COHERE_CREDENTIAL_ID",
+                    "name": "Cohere account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "executeQuery",
+                "query": "={{ $json.body.message }}",
+                "tableName": "documents",
+                "keywordFields": "content",
+                "limit": 4
+            },
+            "id": "supabase-vector",
+            "name": "Supabase Vector Search",
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                900,
+                300
+            ],
+            "credentials": {
+                "supabaseApi": {
+                    "id": "SUPABASE_CREDENTIAL_ID",
+                    "name": "Supabase account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "model": "llama-3.3-70b-versatile",
+                "prompt": "=RESPOUESTA DE ASISTENTE DE FARMACIA\n\nCONTEXTO:\n{{ $json.documents.map(d => d.content).join('\\n---\\n') }}\n\nPREGUNTA USUARIO:\n{{ $('Webhook').item.json.body.message }}\n\nInstrucciones: Eres un asistente útil de farmacia. Usa el contexto para responder. Si no sabes, di que no sabes.",
+                "options": {}
+            },
+            "id": "groq-chat",
+            "name": "Groq Chat",
+            "type": "n8n-nodes-base.groq",
+            "typeVersion": 1,
+            "position": [
+                1120,
+                300
+            ],
+            "credentials": {
+                "groqApi": {
+                    "id": "GROQ_CREDENTIAL_ID",
+                    "name": "Groq account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "respondWith": "json",
+                "responseBody": "={ \"response\": {{ $json.choices[0].message.content }} }",
+                "options": {}
+            },
+            "id": "respond-webhook",
+            "name": "Respond to Webhook",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                1340,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Cohere Embeddings",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Cohere Embeddings": {
+            "main": [
+                [
+                    {
+                        "node": "Supabase Vector Search",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Supabase Vector Search": {
+            "main": [
+                [
+                    {
+                        "node": "Groq Chat",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Groq Chat": {
+            "main": [
+                [
+                    {
+                        "node": "Respond to Webhook",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}
