@@ -1,0 +1,65 @@
+==========================================================
+COMPORTAMIENTO DEL AGENTE IA (RAG) - FARMACIA VIDA SANA
+==========================================================
+
+Este documento explica cómo "piensa" y funciona el asistente virtual de la farmacia.
+
+1. ARQUITECTURA GENERAL
+----------------------------------------------------------
+El agente utiliza una técnica llamada RAG (Retrieval-Augmented Generation).
+No "inventa" información, sino que busca datos reales en tu base de datos antes de responder.
+
+[USUARIO] -> [BUSCADOR INTELIGENTE] -> [BASE DE DATOS] -> [CEREBRO IA] -> [RESPUESTA]
+
+2. FLUJO DE UNA CONSULTA
+----------------------------------------------------------
+Cuando un usuario pregunta (ej: "¿Qué precio tiene la Amoxicilina?"):
+
+A. BÚSQUEDA VECTORIAL (El "Buscador")
+   - El sistema convierte la pregunta en números (Embeddings Cohere).
+   - Compara esos números con la tabla `documents` en Supabase.
+   - Encuentra los fragmentos de texto más parecidos (ej: "Producto: Amoxicilina... Precio: 25 Bs").
+   - Esto permite encontrar cosas por concepto, no solo por palabra exacta.
+
+B. BÚSQUEDA DIRECTA (El "Refuerzo")
+   - El sistema también busca palabras clave específicas en la base de datos SQL.
+   - Si detecta "categoría", busca en la tabla `categoria`.
+   - Si detecta "ventas", calcula el total del día en la tabla `venta`.
+
+C. GENERACIÓN (El "Cerebro")
+   - Se envía toda la información encontrada a Groq (Modelo Llama 3 70B).
+   - Se le da una instrucción: "Eres un farmacéutico. Usa ESTA información para responder al usuario".
+   - La IA redacta una respuesta natural y amable.
+
+3. FUENTES DE CONOCIMIENTO
+----------------------------------------------------------
+El agente tiene acceso a 4 tipos de datos principales:
+
+1. PRODUCTOS (Tabla `articulo`)
+   - Nombre, Descripción, Stock, Precio, Fecha de Vencimiento.
+   - *Uso:* "Cuánto cuesta...", "Hay stock de...", "Cuándo vence..."
+
+2. CATEGORÍAS (Tabla `categoria`)
+   - Nombres de categorías y descripciones.
+   - *Uso:* "Qué tipos de productos tienen", "Busca categorías"
+
+3. PROVEEDORES (Tabla `proveedor`)
+   - Nombre, Contacto, Teléfono.
+   - *Uso:* "Quién provee X producto", "Dame el contacto de laboratorios Y"
+
+4. CLIENTES (Tabla `cliente`)
+   - Nombres y documentos de clientes registrados.
+   - *Uso:* VERIFICACIÓN. "¿Está registrado Juan Pérez?"
+
+4. LÍMITES Y REGLAS
+----------------------------------------------------------
+- Alucinaciones: El sistema está diseñado para decir "No sé" si no encuentra la información en la base de datos, reduciendo respuestas falsas.
+- Actualización: Si cambias un precio en la BD, el agente NO lo sabe inmediatamente hasta que corras el script de actualización (`load_products_rag.py`).
+- Privacidad: El agente solo ve lo que indexamos. No tiene acceso a contraseñas ni datos sensibles de usuarios del sistema.
+
+5. MANTENIMIENTO
+----------------------------------------------------------
+Para que el agente siga siendo inteligente, cada vez que haya cambios grandes en el inventario:
+> Ejecutar: python scripts/load_products_rag.py
+
+==========================================================
