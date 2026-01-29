@@ -1,13 +1,46 @@
-# Exlcuir carpeta de entorno virtual y cache
-**/__pycache__/
-**/.venv/
-**/venv/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# EXCLUIR ARCHIVOS SENSIBLES (ESTO EVITÓ EL PUSH)
-**/ .env
-farmacia_python/.env
+# Virtual Environment
+.venv/
+venv/
+ENV/
 
-# Otros
-*.pyc
+# Environment Variables (SENSITIVE DATA)
+.env
+
+# IDEs
 .vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database (Optional, if using local SQLite)
+*.sqlite3
+*.db
+
+# Project specific
+static/img/qr_pago.*
 GUIA_DESPLIEGUE.txt
