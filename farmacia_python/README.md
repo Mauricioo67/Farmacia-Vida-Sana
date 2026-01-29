@@ -1,183 +1,68 @@
-# Sistema de Farmacia - Python Flask + Supabase
+# 💊 Farmacia Vida Sana - Gestión Profesional & POS
 
-Sistema completo de gestión para farmacias desarrollado con **Python Flask** y **Supabase** (PostgreSQL). Incluye punto de venta, gestión de inventario, reportes y chatbot con IA.
+Sistema integral de gestión farmacéutica y Punto de Venta (POS) desarrollado bajo estándares modernos con **Python Flask** y **Supabase**. El sistema combina una interfaz de usuario premium con inteligencia artificial para optimizar las operaciones de venta y control de inventario.
 
-## 🚀 Características Principales
+---
 
-### ✅ Módulos Implementados
+## 🌟 Características Destacadas
 
-- **🔐 Autenticación**: Login seguro con sesiones
-- **📊 Dashboard**: Estadísticas en tiempo real (ventas, productos, stock)
-- **💊 Gestión de Productos**: CRUD completo con categorías
-- **👥 Gestión de Clientes**: Registro y administración
-- **🏷️ Categorías**: Organización de productos
-- **💰 Punto de Venta (POS)**:
-  - Búsqueda rápida de productos
-  - Carrito dinámico con JavaScript
-  - Control automático de stock
-  - Generación de recibos PDF profesionales
-  - Historial de ventas
-- **📈 Reportes**:
-  - Reporte de ventas con filtros de fecha
-  - Reporte de inventario con niveles de stock
-  - Estadísticas en tiempo real
-- **🤖 Chatbot con IA**:
-  - Asistente virtual powered by Groq API
-  - Búsqueda inteligente de productos
-  - Consultas de inventario en tiempo real
-  - Respuestas en lenguaje natural
+### 🛒 Punto de Venta (POS) Avanzado
+- **Multi-Pago**: Soporte para cobros en **Efectivo** (con cálculo automático de cambio) y **Pagos QR / Transferencias**.
+- **Moneda Local**: Totalmente adaptado a **Bolivianos (Bs.)** en recibos, dashboard y reportes.
+- **Validación Robusta**: Control de stock en tiempo real y prevención de ventas sin existencias.
+- **Recibos Profesionales**: Generación de facturas PDF automatizadas con ReportLab.
 
-## 🛠 Tecnologías
+### 🤖 Asistente Inteligente (Chatbot RAG)
+- **Contexto en Tiempo Real**: Capacidad de consultar el inventario, precios y existencias mediante lenguaje natural.
+- **Motor Groq LLaMA 3.3**: Respuestas rápidas y precisas impulsadas por inteligencia artificial de vanguardia.
+- **Sugerencias de Productos**: Ayuda al vendedor a encontrar artículos por nombre, código o categoría.
 
-- **Backend**: Python 3.x, Flask
-- **Base de Datos**: Supabase (PostgreSQL)
-- **Frontend**: HTML5, Jinja2, Bootstrap 5, JavaScript
-- **PDF**: ReportLab
-- **IA**: Groq API (LLaMA 3.3 70B)
-- **Librerías**: `flask-cors`, `python-dotenv`, `supabase`, `reportlab`, `groq`
+### 📊 Dashboard & Analítica Modernos
+- **Visualización de Datos**: Gráficas dinámicas de tendencia de ventas diarias con **Chart.js**.
+- **Métricas Clave**: Seguimiento instantáneo de Ventas Hoy, Productos Bajos en Stock y Clientes.
+- **Interfaz UI/UX Premium**: Diseño responsivo con efectos de **Glassmorphism**, animaciones fluidas y soporte nativo para **Modo Oscuro/Claro**.
 
-## ⚙️ Instalación
+---
 
-### 1. Clonar el repositorio
-```bash
-git clone <repository-url>
-cd Farmacia/farmacia_python
-```
+## 🛠️ Stack Tecnológico
 
-### 2. Crear entorno virtual
-```bash
-python -m venv venv
-# Windows
-.\venv\Scripts\activate
-# Linux/Mac
-source venv/bin/activate
-```
+- **Backend**: Python 3.10+ & Flask.
+- **Base de Datos**: Supabase (PostgreSQL) con consultas optimizadas.
+- **Inteligencia Artificial**: Groq Cloud API & LangChain (RAG).
+- **Frontend**: HTML5, Jinja2, Bootstrap 5, Vanilla JS (ES6+).
+- **DevOps & CI/CD**: 
+  - **GitHub Actions**: Pipeline automatizado para pruebas (`pytest`).
+  - **Render**: Despliegue en la nube con soporte para Gunicorn.
 
-### 3. Instalar dependencias
-```bash
-pip install -r requirements.txt
-```
+---
 
-### 4. Configurar variables de entorno
+## 🛡️ Seguridad y Robustez
 
-Edita el archivo `.env` y configura:
+- **Autenticación**: Manejo seguro de sesiones y perfiles de usuario.
+- **Protección de Datos**: Configuración de `.gitignore` para secretos y cumplimiento de RLS en base de datos.
+- **Integridad**: Capa de abstracción de datos personalizada para manejar operaciones atómicas en Supabase.
 
-```env
-# Supabase
-SUPABASE_URL=tu_supabase_url
-SUPABASE_KEY=tu_supabase_key
-SECRET_KEY=tu_secret_key
+---
 
-# Groq API (para chatbot)
-GROQ_API_KEY=tu_groq_api_key
-```
+## 🚀 Guía de Instalación Rápida
 
-**Obtener credenciales:**
-- Supabase: https://supabase.com/
-- Groq API (gratis): https://console.groq.com/
+1. **Clonar**: `git clone https://github.com/Mauricioo67/Farmacia-Vida-Sana.git`
+2. **Entorno**: `python -m venv venv` -> `source venv/Scripts/activate`
+3. **Dependencias**: `pip install -r requirements.txt`
+4. **Variables**: Configurar `.env` con las llaves de Supabase y Groq.
+5. **Ejecutar**: `python app.py`
 
-### 5. Configurar base de datos
+---
 
-En el SQL Editor de Supabase, ejecuta:
+## ☁️ Despliegue (Production Ready)
 
-1. `basededatos.sql` - Crea las tablas
-2. `datoss.sql` - Datos de prueba (opcional)
+El sistema incluye archivos de configuración para despliegue inmediato:
+- **`Procfile`**: Configurado para Render/Heroku.
+- **`.github/workflows/ci.yml`**: Pruebas automáticas en cada push.
+- **`GUIA_DESPLIEGUE.txt`**: Manual paso a paso en español para el administrador.
 
-## ▶️ Ejecución
+---
 
-```bash
-python app.py
-```
+> **Nota de Desarrollo**: Este proyecto representa la evolución de un sistema legacy hacia una arquitectura moderna, escalable y centrada en el usuario.
 
-Accede a: **http://localhost:5000**
-
-## 👤 Credenciales por Defecto
-
-- **Usuario**: `admin`
-- **Contraseña**: `mauricio1`
-
-## 📁 Estructura del Proyecto
-
-```
-farmacia_python/
-├── app.py                 # Aplicación principal
-├── config.py             # Configuración
-├── requirements.txt      # Dependencias
-├── .env                  # Variables de entorno
-├── controllers/          # Controladores (rutas)
-│   ├── auth.py          # Autenticación
-│   ├── main.py          # Dashboard
-│   ├── products.py      # Productos
-│   ├── clients.py       # Clientes
-│   ├── categories.py    # Categorías
-│   ├── sales.py         # Ventas y POS
-│   ├── reports.py       # Reportes
-│   └── chatbot.py       # Chatbot IA
-├── models/              # Modelos
-│   └── db.py           # Conexión a DB
-├── templates/           # Vistas HTML
-│   ├── base.html       # Template base
-│   ├── auth/           # Login, registro
-│   ├── main/           # Dashboard
-│   ├── products/       # CRUD productos
-│   ├── clients/        # CRUD clientes
-│   ├── categories/     # CRUD categorías
-│   ├── sales/          # POS e historial
-│   └── reports/        # Reportes
-└── static/             # Archivos estáticos
-    ├── css/
-    │   └── chatbot.css
-    └── js/
-        └── chatbot.js
-```
-
-## 🎯 Funcionalidades Destacadas
-
-### Punto de Venta (POS)
-- Interfaz intuitiva para ventas rápidas
-- Búsqueda de productos en tiempo real
-- Actualización automática de stock
-- Generación de PDF con diseño profesional
-
-### Reportes
-- **Ventas**: Análisis por período con totales
-- **Inventario**: Control de stock con alertas
-
-### Chatbot IA
-- Asistente virtual disponible en todas las páginas
-- Búsqueda de productos por nombre
-- Consultas de stock en tiempo real
-- Respuestas contextuales sobre la farmacia
-
-## 🔧 Desarrollo
-
-### Agregar nuevos módulos
-
-1. Crear controlador en `controllers/`
-2. Crear templates en `templates/`
-3. Registrar blueprint en `app.py`
-
-### Base de datos
-
-El proyecto usa Supabase con las siguientes tablas:
-- `trabajador` - Usuarios del sistema
-- `categoria` - Categorías de productos
-- `articulo` - Productos
-- `cliente` - Clientes
-- `venta` - Ventas
-- `detalle_venta` - Detalles de ventas
-
-## 📝 Notas
-
-- El chatbot requiere una API key de Groq (gratuita)
-- Los PDFs se generan con ReportLab
-- El sistema usa sesiones de Flask para autenticación
-- Supabase maneja la persistencia de datos
-
-## 🤝 Contribuciones
-
-Este proyecto es una migración de un sistema legacy PHP a una arquitectura moderna con Python Flask.
-
-## 📄 Licencia
-
-Proyecto educativo/comercial para gestión de farmacias.
+**Desarrollado para la eficiencia farmacéutica.** 🏥✨

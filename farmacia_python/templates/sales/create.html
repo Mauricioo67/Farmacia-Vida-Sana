@@ -29,7 +29,7 @@
                             <tbody id="listaProductos">
                                 {% for p in productos %}
                                 <tr class="producto-item" data-nombre="{{ p.nombre|lower }} {{ p.codigo }}"
-                                    data-json="{{ p|tojson }}">
+                                    data-json='{{ p|tojson }}'>
                                     <td>
                                         <div class="fw-bold">{{ p.nombre }}</div>
                                         <small class="text-muted">{{ p.codigo }}</small>
