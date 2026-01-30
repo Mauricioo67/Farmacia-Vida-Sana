@@ -42,5 +42,5 @@ Thumbs.db
 *.db
 
 # Project specific
-static/img/qr_pago.*
 GUIA_DESPLIEGUE.txt
+docs/EXPLICACION_RAG.md

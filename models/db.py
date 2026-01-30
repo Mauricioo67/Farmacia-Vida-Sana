@@ -73,6 +73,10 @@ class SupabaseTable:
         self.filters[col] = ('gt', val)
         return self
     
+    def neq(self, col, val):
+        self.filters[col] = ('neq', val)
+        return self
+    
     def order(self, col, desc=False):
         self.order_col = col
         self.order_desc = desc
